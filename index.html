@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+</head>
+<body>
+    <canvas id="canvas" width="1600px" height="900px" style="border: 1px solid black;"></canvas>
+    <button onclick="changeFrame(1)">Next</button>
+    <button onclick="changeFrame(-1)">Prev</button>
+</body>
+</html>
+
+<script>
+
+    let frame = 1;
+    const frameWidth = 172;
+    const frameHeight = 183;
+    let imageObject = []
+    const canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext('2d');
+    let img = new Image();
+    img.src = './static/spritesheet.png';
+    img.onload = () => {
+        drawImageByFrame(img, 'spritesheet', 1)
+    }
+    
+    function drawImageByFrame(img, imgName, frame) {
+        // first element - base width and height of frame, then every frame x, y
+        imageObject = [
+            {
+                frameWidth: 172,
+                frameHeight: 183
+            },
+            {
+                x: 0 * 172,
+                y: 0 * 183,
+            },
+            {
+                x: 1 * 172,
+                y: 0 * 183,
+            },
+            {
+                x: 2 * 172,
+                y: 0 * 183,
+            },
+            {
+                x: 3 * 172,
+                y: 0 * 183,
+            },
+            {
+                x: 4 * 172,
+                y: 0 * 183,
+            },
+            {
+                x: 0 * 172,
+                y: 1 * 183,
+            },
+            {
+                x: 1 * 172,
+                y: 1 * 183,
+            },
+            {
+                x: 2 * 172,
+                y: 1 * 183,
+            },
+            {
+                x: 3 * 172,
+                y: 1 * 183,
+            },
+            {
+                x: 4 * 172,
+                y: 1 * 183,
+            }
+        ]
+
+        ctx.save();
+        // use translate for draw beginning instead of drawing the image using canvas.width/height
+        ctx.translate(300, 300);
+        ctx.translate(imageObject[0].frameWidth/2, imageObject[0].frameHeight/2);
+        ctx.rotate(240 * Math.PI / 180);
+        ctx.drawImage(img, imageObject[frame].x, imageObject[frame].y, imageObject[0].frameWidth, imageObject[0].frameHeight, -imageObject[0].frameWidth/2, -imageObject[0].frameHeight/2, imageObject[0].frameWidth, imageObject[0].frameHeight);
+        ctx.restore();
+    }
+
+    function changeFrame(number) {
+        frame = frame + number;
+        if (frame === 0) {
+            frame = 10;
+        } else if (frame === 11) {
+            frame = 1;
+        }
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, imageObject[frame].x, imageObject[frame].y, imageObject[0].frameWidth, imageObject[0].frameHeight, 150, 100, imageObject[0].frameWidth, imageObject[0].frameHeight);
+    }
+
+    
+    
+    </script>
