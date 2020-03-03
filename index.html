@@ -105,14 +105,15 @@
     }
 
     // Used for testing purposes
+    let imageFrame = drawJSON.frame;
     function changeFrame(number) {
-        frame = frame + number;
-        if (frame === 0) {
-            frame = 10;
-        } else if (frame === 11) {
-            frame = 1;
+        imageFrame = imageFrame + number;
+        if (imageFrame === 0) {
+            imageFrame = 10;
+        } else if (imageFrame === 11) {
+            imageFrame = 1;
         }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, drawJSON.imageMappingJSON[frame].x, drawJSON.imageMappingJSON[frame].y, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight, 150, 100, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight);
+        ctx.drawImage(img, drawJSON.imageMappingJSON[imageFrame].x, drawJSON.imageMappingJSON[imageFrame].y, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight, 150, 100, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight);
     }
     </script>
