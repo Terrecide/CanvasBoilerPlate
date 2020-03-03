@@ -14,25 +14,25 @@
 </html>
 
 <script>
-
-    let frame = 1;
-    const frameWidth = 172;
-    const frameHeight = 183;
-    let imageObject = []
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext('2d');
-    let img = new Image();
-    img.src = './static/spritesheet.png';
-    img.onload = () => {
-        drawImageByFrame(img, 'spritesheet', 1)
-    }
-    
-    function drawImageByFrame(img, imgName, frame) {
-        // first element - base width and height of frame, then every frame x, y
-        imageObject = [
+    const drawJSON = {
+        "frame" : 1,
+        "imageName": "spritesheet.png", // TODO
+        "tint": "RGB", // TODO
+        "rotateInDegrees": 0,
+        "positionX" : 300,
+        "positionY" : 300,
+        "widthInCanvas" : 500,
+        "heightInCanvas" : 500,
+        "keepDimensionsToWidth" : true,
+        "keepDimensionsToHeight" : true,
+        "layer": 1, // TODO
+        // first element - base width and height of frame, then x, y for every frame 
+        "imageMappingJSON": [
             {
                 frameWidth: 172,
-                frameHeight: 183
+                frameHeight: 183,
             },
             {
                 x: 0 * 172,
@@ -75,16 +75,36 @@
                 y: 1 * 183,
             }
         ]
+    }
+    let img = new Image();
+    img.src = './static/spritesheet.png';
+    img.onload = () => {
+        drawImageByFrame(img, drawJSON)
+    }
+    
+    function drawImageByFrame(img, drawJSON) {
+        let widthInCanvas = drawJSON.widthInCanvas;
+        let heightInCanvas = drawJSON.heightInCanvas;
+        if (drawJSON.keepDimensionsToWidth) {
+            widthInCanvas = drawJSON.imageMappingJSON[0].frameWidth;
+        }
+        if (drawJSON.keepDimensionsToHeight) {
+            heightInCanvas = drawJSON.imageMappingJSON[0].frameHeight;
+        }
 
         ctx.save();
-        // use translate for draw beginning instead of drawing the image using canvas.width/height
-        ctx.translate(300, 300);
-        ctx.translate(imageObject[0].frameWidth/2, imageObject[0].frameHeight/2);
-        ctx.rotate(240 * Math.PI / 180);
-        ctx.drawImage(img, imageObject[frame].x, imageObject[frame].y, imageObject[0].frameWidth, imageObject[0].frameHeight, -imageObject[0].frameWidth/2, -imageObject[0].frameHeight/2, imageObject[0].frameWidth, imageObject[0].frameHeight);
+        // use translate for positioning
+        ctx.translate(drawJSON.positionX, drawJSON.positionY);
+        // translate for rotation and rotation itself
+        ctx.translate(drawJSON.imageMappingJSON[0].frameWidth/2, drawJSON.imageMappingJSON[0].frameHeight/2);
+        ctx.rotate(drawJSON.rotateInDegrees * Math.PI / 180);
+        // drawImage by frame
+        ctx.drawImage(img, drawJSON.imageMappingJSON[drawJSON.frame].x, drawJSON.imageMappingJSON[drawJSON.frame].y, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight, -drawJSON.imageMappingJSON[0].frameWidth/2, -drawJSON.imageMappingJSON[0].frameHeight/2, widthInCanvas, heightInCanvas);
+        
         ctx.restore();
     }
 
+    // Used for testing purposes
     function changeFrame(number) {
         frame = frame + number;
         if (frame === 0) {
@@ -93,9 +113,6 @@
             frame = 1;
         }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.drawImage(img, imageObject[frame].x, imageObject[frame].y, imageObject[0].frameWidth, imageObject[0].frameHeight, 150, 100, imageObject[0].frameWidth, imageObject[0].frameHeight);
+        ctx.drawImage(img, drawJSON.imageMappingJSON[frame].x, drawJSON.imageMappingJSON[frame].y, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight, 150, 100, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight);
     }
-
-    
-    
     </script>
