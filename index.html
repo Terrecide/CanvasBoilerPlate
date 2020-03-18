@@ -19,7 +19,7 @@
     const drawJSON = {
         "frame" : 1,
         "imageName": "spritesheet.png", // TODO
-        "tint": "RGB", // TODO
+        "tint": [255,255,0], // or null
         "rotateInDegrees": 0,
         "positionX" : 300,
         "positionY" : 300,
@@ -30,6 +30,77 @@
         "layer": 1, // TODO
         // first element - base width and height of frame, then x, y for every frame 
         "imageMappingJSON": [
+            // transparent spritesheet json
+                {
+                    "frameWidth": 108,
+                    "frameHeight": 140
+                },
+                {
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "x": 108,
+                    "y": 0
+                },
+                {
+                    "x": 216,
+                    "y": 0
+                },
+                {
+                    "x": 324,
+                    "y": 0
+                },
+                {
+                    "x": 432,
+                    "y": 0
+                },
+                {
+                    "x": 540,
+                    "y": 0
+                },
+                {
+                    "x": 648,
+                    "y": 0
+                },
+                {
+                    "x": 756,
+                    "y": 0
+                },
+                {
+                    "x": 0,
+                    "y": 0
+                },
+                {
+                    "x": 108,
+                    "y": 0
+                },
+                {
+                    "x": 216,
+                    "y": 140
+                },
+                {
+                    "x": 324,
+                    "y": 140
+                },
+                {
+                    "x": 432,
+                    "y": 140
+                },
+                {
+                    "x": 540,
+                    "y": 140
+                },
+                {
+                    "x": 648,
+                    "y": 140
+                },
+                {
+                    "x": 756,
+                    "y": 140
+                }
+            /* 
+            // spritesheet.png json
             {
                 frameWidth: 172,
                 frameHeight: 183,
@@ -73,16 +144,16 @@
             {
                 x: 4 * 172,
                 y: 1 * 183,
-            }
+            } */
         ]
     }
     let img = new Image();
-    img.src = './static/spritesheet.png';
+    img.src = './static/transparent-spritesheet.png';
     img.onload = () => {
         drawImageByFrame(img, drawJSON)
     }
     
-    function drawImageByFrame(img, drawJSON) {
+    async function drawImageByFrame(img, drawJSON) {
         let widthInCanvas = drawJSON.widthInCanvas;
         let heightInCanvas = drawJSON.heightInCanvas;
         if (drawJSON.keepDimensionsToWidth) {
@@ -98,6 +169,12 @@
         // translate for rotation and rotation itself
         ctx.translate(drawJSON.imageMappingJSON[0].frameWidth/2, drawJSON.imageMappingJSON[0].frameHeight/2);
         ctx.rotate(drawJSON.rotateInDegrees * Math.PI / 180);
+        // tint image
+        if (drawJSON.tint) {
+            const rgbks = await generateRGBKs(img);
+            const tintImg = await generateTintImage(img, rgbks, drawJSON.tint[0], drawJSON.tint[1], drawJSON.tint[2]);
+            img = tintImg
+        }
         // drawImage by frame
         ctx.drawImage(img, drawJSON.imageMappingJSON[drawJSON.frame].x, drawJSON.imageMappingJSON[drawJSON.frame].y, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight, -drawJSON.imageMappingJSON[0].frameWidth/2, -drawJSON.imageMappingJSON[0].frameHeight/2, widthInCanvas, heightInCanvas);
         
@@ -115,5 +192,84 @@
         }
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, drawJSON.imageMappingJSON[imageFrame].x, drawJSON.imageMappingJSON[imageFrame].y, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight, 150, 100, drawJSON.imageMappingJSON[0].frameWidth, drawJSON.imageMappingJSON[0].frameHeight);
+    }
+
+    // Used for tinting images
+    function generateRGBKs( img ) {
+        let w = img.width;
+        let h = img.height;
+        let rgbks = [];
+
+        let canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        
+        let ctx = canvas.getContext("2d");
+        ctx.drawImage( img, 0, 0 );
+        
+        let pixels = ctx.getImageData( 0, 0, w, h ).data;
+
+        // 4 is used to ask for 3 images: red, green, blue and
+        // black in that order.
+        for ( let rgbI = 0; rgbI < 4; rgbI++ ) {
+            let canvas = document.createElement("canvas");
+            canvas.width  = w;
+            canvas.height = h;
+            
+            let ctx = canvas.getContext('2d');
+            ctx.drawImage( img, 0, 0 );
+            let to = ctx.getImageData( 0, 0, w, h );
+            let toData = to.data;
+            
+            for (
+                    let i = 0, len = pixels.length;
+                    i < len;
+                    i += 4
+            ) {
+                toData[i  ] = (rgbI === 0) ? pixels[i  ] : 0;
+                toData[i+1] = (rgbI === 1) ? pixels[i+1] : 0;
+                toData[i+2] = (rgbI === 2) ? pixels[i+2] : 0;
+                toData[i+3] =                pixels[i+3]    ;
+            }
+            
+            ctx.putImageData( to, 0, 0 );
+            
+            // image is _slightly_ faster then canvas for this, so convert
+            let imgComp = new Image();
+            imgComp.src = canvas.toDataURL();
+            
+            rgbks.push( imgComp );
+        }
+
+        return rgbks;
+    }
+    
+    // Used for tinting images
+    function generateTintImage( img, rgbks, red, green, blue ) {
+        let buff = document.createElement( "canvas" );
+        buff.width  = img.width;
+        buff.height = img.height;
+        
+        let ctx  = buff.getContext("2d");
+
+        ctx.globalAlpha = 1;
+        ctx.globalCompositeOperation = 'copy';
+        ctx.drawImage( rgbks[3], 0, 0 );
+
+        ctx.globalCompositeOperation = 'lighter';
+        if ( red > 0 ) {
+            ctx.globalAlpha = red   / 255.0;
+            ctx.drawImage( rgbks[0], 0, 0 );
+        }
+        if ( green > 0 ) {
+            ctx.globalAlpha = green / 255.0;
+            ctx.drawImage( rgbks[1], 0, 0 );
+        }
+        if ( blue > 0 ) {
+            ctx.globalAlpha = blue  / 255.0;
+            ctx.drawImage( rgbks[2], 0, 0 );
+        }
+
+        return buff;
     }
     </script>
