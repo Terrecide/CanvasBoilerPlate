@@ -19,7 +19,7 @@
     const drawJSON = {
         "frame" : 1,
         "imageName": "spritesheet.png", // TODO
-        "tint": [255,255,0], // or null
+        "tint": [255,255,1], // [255,255,255] or null for no tint
         "rotateInDegrees": 0,
         "positionX" : 300,
         "positionY" : 300,
@@ -153,7 +153,7 @@
         drawImageByFrame(img, drawJSON)
     }
     
-    async function drawImageByFrame(img, drawJSON) {
+    function drawImageByFrame(img, drawJSON) {
         let widthInCanvas = drawJSON.widthInCanvas;
         let heightInCanvas = drawJSON.heightInCanvas;
         if (drawJSON.keepDimensionsToWidth) {
@@ -171,8 +171,8 @@
         ctx.rotate(drawJSON.rotateInDegrees * Math.PI / 180);
         // tint image
         if (drawJSON.tint) {
-            const rgbks = await generateRGBKs(img);
-            const tintImg = await generateTintImage(img, rgbks, drawJSON.tint[0], drawJSON.tint[1], drawJSON.tint[2]);
+            const rgbks = generateRGBKs(img);
+            const tintImg = generateTintImage(img, rgbks, drawJSON.tint[0], drawJSON.tint[1], drawJSON.tint[2]);
             img = tintImg
         }
         // drawImage by frame
@@ -209,8 +209,7 @@
         
         let pixels = ctx.getImageData( 0, 0, w, h ).data;
 
-        // 4 is used to ask for 3 images: red, green, blue and
-        // black in that order.
+        // 4 is used to ask for 3 images: red, green, blue and black in that order.
         for ( let rgbI = 0; rgbI < 4; rgbI++ ) {
             let canvas = document.createElement("canvas");
             canvas.width  = w;
@@ -234,11 +233,7 @@
             
             ctx.putImageData( to, 0, 0 );
             
-            // image is _slightly_ faster then canvas for this, so convert
-            let imgComp = new Image();
-            imgComp.src = canvas.toDataURL();
-            
-            rgbks.push( imgComp );
+            rgbks.push( canvas );
         }
 
         return rgbks;
